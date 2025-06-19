@@ -1,0 +1,41 @@
+Q: I q1 q2 q3 q4 q5 q6 q7 erro F
+I: I
+F: F
+
+I -> q1 | gb
+I -> erro | ac vb fpc rm ce
+
+q1 -> q4 | ac
+q1 -> q2 | vb
+q1 -> erro | gb fpc rm ce
+
+q2 -> q3 | vb
+q2 -> erro | gb ac fpc rm ce
+
+q3 -> q2 | vb
+q3 -> q4 | ac
+q3 -> q6 | fpc
+q3 -> erro | gb rm ce
+
+q4 -> q5 | ac
+q4 -> erro | gb vb fpc rm ce
+
+q5 -> q4 | ac
+q5 -> q2 | vb
+q5 -> q6 | fpc
+q5 -> erro | gb rm ce
+
+q6 -> q7 | rm
+q6 -> erro | gb ac vb fpc ce
+
+q7 -> F | ce
+q7 -> erro | gb ace vb fpc rm ce
+
+F -> F | vb
+F -> F | rm
+F -> F | gb
+F -> F | fpc
+F -> F | ce
+F -> F | ac
+
+---
