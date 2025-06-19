@@ -1,0 +1,45 @@
+Q: I q1 q2 q3 q4 q5 q6 q7 q8 q9 erro F1 F2
+I: I
+F: F1 F2
+
+I -> q1 | ah
+I -> erro | caf oc pmb vi
+
+q1 -> q2 | q
+q1 -> erro | ah caf oc pmb vi
+
+q2 -> q3 | q
+q2 -> erro | ah caf oc pmb vi 
+
+q3 -> q4 | q
+q3 -> erro | ah caf oc pmb vi
+
+q4 -> q5 | pmb
+q4 -> erro | ah caf oc q vi
+
+q5 -> q6 | pmb
+q5 -> erro | ah caf oc q vi
+
+q6 -> q2 | q
+q6 -> q8 | oc
+q6 -> F1 | caf
+q6 -> erro | ah q vi
+
+q7 -> F1 | caf
+q7 -> erro | ah oc pmb q vi
+
+q8 -> q9 | oc
+q8 -> erro | ah caf pmb q vi
+
+q9 -> F2 | vi
+q9 -> erro | ah caf oc pmb q
+
+F1 -> q7 | caf
+F1 -> erro | ah oc pmb q vi
+
+F2 -> q8 | oc
+F2 -> erro | ah caf pmb q vi
+
+erro -> erro | ah caf oc pmb q vi
+
+---

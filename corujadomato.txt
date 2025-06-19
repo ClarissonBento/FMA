@@ -38,4 +38,6 @@ F -> F | fpc
 F -> F | ce
 F -> F | ac
 
+erro -> erro | ac ce fpc gb rm vb
+
 ---
