@@ -1,0 +1,69 @@
+Q: I q1 q2 q3 q4 q5 q6 q7 q8 q9 q10 q11 q12 q13 q14 q15 erro F
+I: I
+F: F
+
+I -> q1 | oc
+I -> q4 | ah
+I -> q6 | et
+I -> erro | ac vb
+
+q1 -> q2 | oc
+q1 -> q5 | ah
+q1 -> q7 | et
+q1 -> erro | ac vb
+
+q2 -> q3 | ah
+q2 -> q8 | et
+q2 -> erro | oc ac vb
+
+q3 -> q9 | ac
+q3 -> q10 | et
+q3 -> erro | oc ah vb
+
+q4 -> q5 | oc
+q4 -> erro | ah et ac vb
+
+q5 -> q3 | oc
+q5 -> erro | ah et ac vb
+
+q6 -> q7 | oc
+q6 -> erro | ah et ac vb
+
+q7 -> q8 | oc
+q7 -> erro | ah et ac vb
+
+q8 -> q3 | ah
+q8 -> erro | oc et ac vb
+
+q9 -> q12 | ac
+q9 -> F | vb
+q9 -> erro | oc ah et
+
+q10 -> q9 | ac
+q10 -> q11 | et
+q10 -> erro | oc ah vb
+
+q11 -> q9 | ac
+q11 -> erro | oc ah et vb
+
+q12 -> q13 | ac
+q12 -> F | vb
+q12 -> erro | oc ah et
+
+q13 -> q14 | ac
+q13 -> F | vb
+q13 -> erro | oc ah et
+
+q14 -> q15 | ac
+q14 -> F | vb
+q14 -> erro | oc ah et
+
+q15 -> F | vb
+q15 -> erro | oc ah et ac
+
+F -> F | vb
+F -> erro | oc ah et ac
+
+erro -> erro | oc ah et ac vb
+
+---
