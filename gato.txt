@@ -1,0 +1,23 @@
+Q: I q1 q2 q3 F
+I: I
+F: F
+
+I -> q1 | ac (* | Z,S,X )
+I -> q2 | et (* | Z,S,Y )
+
+q1 -> q1 | ac ( * | X )
+q1 -> q3 | ah ( * | * )
+
+q2 -> q2 | et ( * | Y )
+q2 -> q2 | caf ( Y | * )
+q2 -> q3 | ac ( S | X )
+q2 -> F | vb ( Z | * )
+
+q3 -> q3 | ah ( X | * )
+q3 -> q3 | ah ( * | * )
+q3 -> q2 | et ( S | Y )
+q3 -> F | vb ( Z | * )
+
+
+
+
