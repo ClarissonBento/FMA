@@ -11,7 +11,7 @@ def exibir_cabecalho(titulo):
     print("╔" + "═" * largura + "╗")
     print("║" + " F A B R I C A   D E   P O Ç Õ E S ".center(largura) + "║")
     print("╚" + "═" * largura + "╝")
-    print(titulo.center(largura+2))
+    print(titulo.center(largura + 2))
     print()
 
 def exibir_estado(estado):
@@ -65,11 +65,12 @@ def efeito_vapor():
 
 
 def efeito_final():
-    print("\nFinalizando a criação...") 
+    print("\nFinalizando a criação...")
     for simbolo in ["⧫", "◆", "◇", "◇", "◆", "⧫"]:
         print(simbolo, end=" ", flush=True)
         time.sleep(0.5)
     print("\n✨✨✨ Poção forjada com maestria! ✨✨✨\n")
+
 
 class AutomatoAFD:
     def __init__(self, estados, inicial, finais, transicoes):
@@ -84,6 +85,7 @@ class AutomatoAFD:
             return True
         self.estado_atual = 'erro'
         return False
+
 
 class AutomatoPilha:
     def __init__(self, estados, inicial, finais, transicoes):
@@ -108,41 +110,49 @@ class AutomatoPilha:
         return False
 
 def ler_arquivo_afd(caminho):
-    linhas = [l.strip() for l in open(caminho) if l.strip()]
+    linhas = [l.strip() for l in open(caminho, encoding='utf-8') if l.strip()]
     estados, inicial, finais, transicoes = [], '', [], {}
     for l in linhas:
-        if l.startswith('Q:'): estados = l[2:].split()
-        elif l.startswith('I:'): inicial = l[2:].strip()
-        elif l.startswith('F:'): finais.append(l[2:].strip())
+        if l.startswith('Q:'):
+            estados = l[2:].split()
+        elif l.startswith('I:'):
+            inicial = l[2:].strip()
+        elif l.startswith('F:'):
+            finais.extend(l[2:].split())
         elif '->' in l and '|' in l:
             parte, simb = l.split('|')
             src, dst = [x.strip() for x in parte.split('->')]
-            for s in simb.split(): transicoes[(src, s)] = dst
-        elif l == '---': break
+            for s in simb.split():
+                transicoes[(src, s)] = dst
+        elif l == '---':
+            break
     return estados, inicial, finais, transicoes
 
-
 def ler_arquivo_apd(caminho):
-    linhas = [l.strip() for l in open(caminho) if l.strip()]
+    linhas = [l.strip() for l in open(caminho, encoding='utf-8') if l.strip()]
     estados, inicial, finais, transicoes = [], '', [], {}
     for l in linhas:
-        if l.startswith('Q:'): estados = l[2:].split()
-        elif l.startswith('I:'): inicial = l[2:].strip()
-        elif l.startswith('F:'): finais.append(l[2:].strip())
+        if l.startswith('Q:'):
+            estados = l[2:].split()
+        elif l.startswith('I:'):
+            inicial = l[2:].strip()
+        elif l.startswith('F:'):
+            finais.extend(l[2:].split())
         elif '->' in l and '|' in l:
             parte, info = l.split('|')
             src, dst = [x.strip() for x in parte.split('->')]
             simb, topo, acao = info.split()
             transicoes[(src, simb, topo)] = (dst, acao)
-        elif l == '---': break
+        elif l == '---':
+            break
     return estados, inicial, finais, transicoes
 
 def carregar_receitas():
     return {
-        'afd_luacheia': ('Lua Cheia', ['AC','AC','AH','OC','ET','VB']),
-        'afd_corujamato': ('Coruja-do-Mato', ['VB','AC','VB','AC','OC','ET']),
-        'afd_andorinha': ('Andorinha', ['WG','AN'] + ['BF']*6 + ['PT']*6 + ['CE']*4 + ['OC']*4 + ['VT']*2),
-        'apd_luacheia': ('Lua Cheia', ['AC','AC','AH','OC','ET','VB'])
+        'afd_luacheia': ('Lua Cheia', ['ac','ac','ah','oc','et','vb']),
+        'afd_corujamato': ('Coruja-do-Mato', ['vb','ac','vb','ac','oc','et']),
+        'afd_andorinha': ('Andorinha', ['wg','an'] + ['bf']*6 + ['pt']*6 + ['ce']*4 + ['oc']*4 + ['vt']*2),
+        'apd_luacheia': ('Lua Cheia', ['ac','ac','ah','oc','et','vb'])
     }
 
 def simular_maquina(tipo, caminho):
@@ -162,15 +172,18 @@ def simular_maquina(tipo, caminho):
     lidos = []
     while True:
         simb = input('Digite ingrediente (ou "fim"): ').strip().lower()
-        if simb == 'FIM': break
+        if simb == 'fim':
+            break
         exibir_ingrediente(simb)
         sucesso = auto.processar(simb)
         lidos.append(simb)
+        time.sleep(0.5)
         limpar_tela()
         exibir_cabecalho(f"{tipo} - Receita: {nome_pocao}")
         exibir_barra(lidos)
         exibir_estado(auto.estado_atual)
-        if tipo == 'APD': exibir_pilha(auto.pilha)
+        if tipo == 'APD':
+            exibir_pilha(auto.pilha)
         if not sucesso or auto.estado_atual == 'erro':
             print("💥 Receita falhou: mistura corrompida. 💥")
             return
@@ -184,6 +197,7 @@ def simular_maquina(tipo, caminho):
 if __name__ == '__main__':
     limpar_tela()
     print('Escolha a máquina: [1] AFD  [2] APD')
-    tipo = 'AFD' if input('Opção: ') == '1' else 'APD'
-    simular_maquina(tipo, input('Caminho do arquivo (.txt): '))
-
+    opcao = input('Opção: ').strip()
+    tipo = 'AFD' if opcao == '1' else 'APD'
+    caminho = input('Caminho do arquivo (.txt): ').strip()
+    simular_maquina(tipo, caminho)
