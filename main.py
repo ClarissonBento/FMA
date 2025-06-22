@@ -161,7 +161,7 @@ def simular_maquina(tipo, caminho):
 
     lidos = []
     while True:
-        simb = input('Digite ingrediente (ou "fim"): ').strip().upper()
+        simb = input('Digite ingrediente (ou "fim"): ').strip().lower()
         if simb == 'FIM': break
         exibir_ingrediente(simb)
         sucesso = auto.processar(simb)
