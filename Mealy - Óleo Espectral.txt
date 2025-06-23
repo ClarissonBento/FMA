@@ -1,0 +1,10 @@
+I -> I | gb ; p
+I -> m1 | caf ; λ
+m1 -> m1 | ac ; p
+m1 -> m2 | et ; e
+m2 -> m3 | fpc ; λ
+m2 -> f1 | ah ; λ
+m3 -> m3 | gb ; i
+m3 -> m3 | ce ; i
+m3 -> f1 | ah ; λ
+f1 -> O | pa ; O
