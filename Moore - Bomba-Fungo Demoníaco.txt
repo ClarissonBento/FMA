@@ -1,0 +1,16 @@
+I -> m1 ; v | ac
+I -> m2 ; c | vi
+m1 -> m1 ; v | ac
+m1 -> m3 ; p | vi
+m1 -> m4 ; d | oc
+m1 -> m5 ; m | gb
+m1 -> f ; λ | ah
+m2 -> m4 ; d | oc
+m2 -> m5 ; m | gb
+m2 -> f ; λ | ah
+m3 -> m4 ; d | oc
+m3 -> m5 ; m | gb
+m3 -> f ; λ | ah
+m4 -> m5 ; m | gb
+m5 -> f ; λ | ah
+f -> B ; E | sa

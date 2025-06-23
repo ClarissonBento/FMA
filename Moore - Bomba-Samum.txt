@@ -1,0 +1,12 @@
+I -> m1 ; o | et
+I -> m2 ; a | ce
+m1 -> m2 ; a | ce
+m1 -> m3 ; s | fpc
+m1 -> f ; λ | ah
+m2 -> m2 ; a | ce
+m2 -> m3 ; s | fpc
+m2 -> m4 ; p | caf
+m2 -> f ; λ | ah
+m3 -> f ; λ | ah
+m4 -> f ; λ | ah
+f -> B ; E | sa
