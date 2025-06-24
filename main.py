@@ -1,6 +1,8 @@
-# Tema: The Witcher 3 - FTC
+#Tema: The Witcher 3 - FTC
 import time
 import os
+
+# utilitários
 
 def limpar_tela():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -20,9 +22,7 @@ def exibir_ingrediente(ing):
     print("╭" + "─" * (len(ing) + 6) + "╮")
     print(f"│ adc:{ing} │")
     print("╰" + "─" * (len(ing) + 6) + "╯")
-    efeito_borbulha()
-    efeito_agitar()
-    efeito_transformacao()
+    time.sleep(0.6)
 
 def exibir_barra(ingr_list):
     barra = "Mistura: [ " + " ═ ".join(ingr_list) + " ]"
@@ -38,175 +38,146 @@ def exibir_pilha(pilha):
             print(f"| {elem} |")
         print("-----\n")
 
-def efeito_borbulha():
-    print("borbulhas cintilantes sobem...")
-    time.sleep(0.6)
+def efeito_borbulha(): time.sleep(0.6)
 
-def efeito_agitar():
-    print("agitando o caldeirão com leveza...")
-    time.sleep(0.6)
+def efeito_agitar(): time.sleep(0.6)
 
-def efeito_transformacao():
-    print("reações etéreas acontecem...")
-    time.sleep(0.6)
+def efeito_transformacao(): time.sleep(0.6)
 
 def efeito_vapor():
-    print("🔮 nuvens místicas emanam vapores... 🔮")
     time.sleep(0.8)
-    print("🔮 um aroma arcano preenche o ar! 🔮\n")
+    print("~ vapores místicos... ~\n")
 
 def efeito_final():
-    print("\nFinalizando a criação...")
-    for simbolo in ["⧫", "◆", "◇", "◇", "◆", "⧫"]:
+    for simbolo in ["⧫","◆","◇","◇","◆","⧫"]:
         print(simbolo, end=" ", flush=True)
         time.sleep(0.5)
-    print("\n✨✨✨ Poção forjada com maestria! ✨✨✨\n")
+    print("\n✨ Poção forjada! ✨\n")
 
 class AutomatoAFD:
-    def __init__(self, estados, inicial, finais, transicoes):
-        self.estado_atual = inicial
-        self.estados_finais = set(finais)
-        self.transicoes = transicoes
-
-    def processar(self, simbolo):
-        chave = (self.estado_atual, simbolo)
-        if chave in self.transicoes:
-            self.estado_atual = self.transicoes[chave]
-            return True
-        self.estado_atual = 'erro'
-        return False
+    def __init__(self,inicial,finais,trans): self.estado_atual=inicial; self.estados_finais=set(finais); self.transicoes=trans
+    def processar(self,s):
+        chave=(self.estado_atual,s)
+        if chave in self.transicoes: self.estado_atual=self.transicoes[chave]; return True
+        self.estado_atual='erro'; return False
 
 class AutomatoAPD:
-    def __init__(self, estados, inicial, finais, transicoes):
-        self.estado_atual = inicial
-        self.estados_finais = set(finais)
-        self.transicoes = transicoes
-        self.pilha = []
-
-    def processar(self, simbolo):
-        topo = self.pilha[-1] if self.pilha else '*'
-
-        chave = (self.estado_atual, simbolo, topo)
+    def __init__(self,inicial,finais,trans): self.estado_atual=inicial; self.estados_finais=set(finais); self.transicoes=trans; self.pilha=[]
+    def processar(self,s):
+        topo=self.pilha[-1] if self.pilha else '*'
+        chave=(self.estado_atual,s,topo)
         if chave not in self.transicoes:
-            chave = (self.estado_atual, simbolo, '*')
-            if chave not in self.transicoes:
-                self.estado_atual = 'erro'
-                return False
-
-        prox, empilhar = self.transicoes[chave]
-        self.estado_atual = prox
-        desempilhar = chave[2]
-        if desempilhar != '*' and self.pilha:
-            self.pilha.pop()
-        if empilhar != '*':
-            self.pilha.append(empilhar)
-
+            chave=(self.estado_atual,s,'*')
+            if chave not in self.transicoes: self.estado_atual='erro'; return False
+        prox,emp=self.transicoes[chave]; self.estado_atual=prox
+        if topo!='*' and self.pilha: self.pilha.pop()
+        if emp!='*': self.pilha.append(emp)
         return True
 
+class AutomatoMoore:
+    def __init__(self,inicial,trans,saida): self.estado_atual=inicial; self.transicoes=trans; self.saidas=saida
+    def processar(self,s):
+        chave=(self.estado_atual,s)
+        if chave in self.transicoes: self.estado_atual=self.transicoes[chave]; return True
+        self.estado_atual='erro'; return False
+    def saida_atual(self): return self.saidas.get(self.estado_atual,'')
 
+class AutomatoMealy:
+    def __init__(self,inicial,trans): self.estado_atual=inicial; self.transicoes=trans
+    def processar(self,s):
+        chave=(self.estado_atual,s)
+        if chave in self.transicoes:
+            prox,saida=self.transicoes[chave]; self.estado_atual=prox; print(f"Saída: {saida}\n"); return True
+        self.estado_atual='erro'; return False
 
-def ler_arquivo_afd(caminho):
-    linhas = [l.strip() for l in open(caminho, encoding='utf-8') if l.strip()]
-    estados, inicial, finais, transicoes = [], '', [], {}
+# leitura genérica incluindo NOME:
+
+def ler_header(c):
+    with open(c,encoding='utf-8') as f:
+        for l in f:
+            if l.strip().startswith('NOME:'):
+                return l.split(':',1)[1].strip()
+    return os.path.basename(c)
+
+def ler_arquivo_afd(c):
+    linhas=[l.strip() for l in open(c,encoding='utf-8') if l.strip() and not l.startswith('NOME:')]
+    ini='';fins=[];trans={}
     for l in linhas:
-        if l.startswith('Q:'):
-            estados = l[2:].split()
-        elif l.startswith('I:'):
-            inicial = l[2:].strip()
-        elif l.startswith('F:'):
-            finais.extend(l[2:].split())
+        if l.startswith('I:'): ini=l[2:].strip()
+        elif l.startswith('F:'): fins+=l[2:].split()
         elif '->' in l and '|' in l:
-            parte, simb = l.split('|')
-            src, dst = [x.strip() for x in parte.split('->')]
-            for s in simb.split():
-                transicoes[(src, s)] = dst
-        elif l == '---':
-            break
-    return estados, inicial, finais, transicoes
+            p,s=l.split('|');a,b=[x.strip() for x in p.split('->')]
+            for sym in s.split(): trans[(a,sym)]=b
+        elif l=='---': break
+    return ini,fins,trans
 
-def ler_arquivo_apd(caminho):
-    linhas = [l.strip() for l in open(caminho, encoding='utf-8') if l.strip()]
-    estados, inicial, finais, transicoes, mensagens = [], '', [], {}, {}
+def ler_arquivo_apd(c):
+    linhas=[l.strip() for l in open(c,encoding='utf-8') if l.strip() and not l.startswith('NOME:')]
+    ini='';fins=[];trans={}
     for l in linhas:
-        if l.startswith('Q:'):
-            estados = l[2:].split()
-        elif l.startswith('I:'):
-            inicial = l[2:].strip()
-        elif l.startswith('F:'):
-            finais.extend(l[2:].split())
+        if l.startswith('I:'): ini=l[2:].strip()
+        elif l.startswith('F:'): fins+=l[2:].split()
         elif '->' in l and '|' in l and ';' in l:
-            parte1, resto = l.split('|', 1)
-            src, dst = [x.strip() for x in parte1.split('->')]
-            simbolo_lido, resto2 = resto.split(';', 1)
-            simbolo_lido = simbolo_lido.strip()
-            desempilhar, empilhar = [x.strip() for x in resto2.split('|')]
-            transicoes[(src, simbolo_lido, desempilhar)] = (dst, empilhar)
-        elif l.startswith('MSG:'):
-            _, resto = l.split(':', 1)
-            simbolo, mensagem = [x.strip() for x in resto.split('|', 1)]
-            mensagens[simbolo] = mensagem
-        elif l == '---':
-            break
-    return estados, inicial, finais, transicoes, mensagens
+            part,rest=l.split('|',1);src,dst=[x.strip() for x in part.split('->')]
+            sym,des,emp=[x.strip() for x in rest.split('|')]
+            trans[(src,sym,des)]=(dst,emp)
+        elif l=='---': break
+    return ini,fins,trans
 
-def carregar_receitas():
-    return {
-        'afd_luacheia': ('Lua Cheia', ['ac','ac','ah','oc','et','vb']),
-        'afd_corujamato': ('Coruja-do-Mato', ['vb','ac','vb','ac','oc','et']),
-        'afd_andorinha': ('Andorinha', ['wg','an'] + ['bf']*6 + ['pt']*6 + ['ce']*4 + ['oc']*4 + ['vt']*2),
-        'apd_luacheia': ('Lua Cheia', ['ac','ac','ah','oc','et','vb'])
-    }
+def ler_arquivo_moore(c):
+    linhas=[l.strip() for l in open(c,encoding='utf-8') if l.strip() and not l.startswith('NOME:')]
+    ini='';trans={};saida={}
+    for l in linhas:
+        if l.startswith('I:') and not ini: ini=l[2:].strip()
+        elif '->' in l and ';' in l and '|' in l:
+            p,r=l.split(';');dst,syms=[x.strip() for x in p.split('->')]
+            out,syms2=[x.strip() for x in r.split('|')]
+            saida[dst]=out
+            for sym in syms2.split(): trans[(p.split('->')[0].strip(),sym)]=dst
+        elif l=='---': break
+    return ini,trans,saida
 
-def simular_maquina(tipo, caminho):
-    nome = os.path.splitext(os.path.basename(caminho))[0]
-    nome_pocao, seq_esperada = carregar_receitas().get(nome, ('Receita Desconhecida', []))
+def ler_arquivo_mealy(c):
+    linhas=[l.strip() for l in open(c,encoding='utf-8') if l.strip() and not l.startswith('NOME:')]
+    ini='';trans={}
+    for l in linhas:
+        if l.startswith('I:') and not ini: ini=l[2:].strip()
+        elif '->' in l and ';' in l and '|' in l:
+            p,r=l.split('|');src,rest=[x.strip() for x in p.split('->')]
+            sym,saida=[x.strip() for x in r.split(';')]
+            dst=rest.strip()
+            trans[(src,sym)]=(dst,saida)
+        elif l=='---': break
+    return ini,trans
 
-    if tipo == 'AFD':
-        _, ini, fins, trans = ler_arquivo_afd(caminho)
-        auto = AutomatoAFD(None, ini, fins, trans)
-        mensagens = {}
-    else:
-        _, ini, fins, trans, mensagens = ler_arquivo_apd(caminho)
-        auto = AutomatoAPD(None, ini, fins, trans)
+# simulação unificada
 
-    limpar_tela()
-    exibir_cabecalho(f"{tipo} - Receita: {nome_pocao}")
+def simular(tipo,arquivo):
+    nome=ler_header(arquivo)
+    limpar_tela(); exibir_cabecalho(f"{tipo} - Poção: {nome}")
+    if tipo=='AFD': ini,fins,trans=ler_arquivo_afd(arquivo);auto=AutomatoAFD(ini,fins,trans)
+    if tipo=='APD': ini,fins,trans=ler_arquivo_apd(arquivo);auto=AutomatoAPD(ini,fins,trans)
+    if tipo=='MOORE': ini,trans,saida=ler_arquivo_moore(arquivo);auto=AutomatoMoore(ini,trans,saida)
+    if tipo=='MEALY': ini,trans=ler_arquivo_mealy(arquivo);auto=AutomatoMealy(ini,trans)
     exibir_estado(auto.estado_atual)
-
-    lidos = []
+    pila=getattr(auto,'pilha',None)
     while True:
-        simb = input('Digite ingrediente (ou "fim"): ').strip().lower()
-        if simb == 'fim':
-            break
-        exibir_ingrediente(simb)
-        sucesso = auto.processar(simb)
-        lidos.append(simb)
-        time.sleep(0.5)
-        limpar_tela()
-        exibir_cabecalho(f"{tipo} - Receita: {nome_pocao}")
-        exibir_barra(lidos)
+        s=input('Digite símbolo (ou "fim"): ').strip().lower()
+        if s=='fim': break
+        exibir_ingrediente(s)
+        ok=auto.processar(s)
+        limpar_tela(); exibir_cabecalho(f"{tipo} - Poção: {nome}")
+        if tipo in ['AFD','APD']: exibir_barra(getattr(auto,'pilha',[]) if tipo=='APD' else [] if False else [] )
         exibir_estado(auto.estado_atual)
+        if tipo=='APD': exibir_pilha(auto.pilha)
+        if not ok or auto.estado_atual=='erro': print("💥 Erro na simulação.");return
+    if tipo in ['AFD','APD'] and auto.estado_atual in auto.estados_finais: efeito_vapor();efeito_final()
+    if tipo=='MOORE': print(f"Saída final: {auto.saida_atual()}")
+    if tipo=='MEALY': print("Simulação Mealy concluída.")
 
-        if tipo == 'APD':
-            exibir_pilha(auto.pilha)
-            for simb_m in mensagens:
-                if simb_m in auto.pilha:
-                    print(f"⚠️ Atenção: {mensagens[simb_m]}\n")
-
-        if not sucesso or auto.estado_atual == 'erro':
-            print("💥 Receita falhou: mistura corrompida. 💥")
-            return
-
-    if auto.estado_atual in auto.estados_finais:
-        efeito_vapor()
-        efeito_final()
-    else:
-        print("💥 Receita inválida: não terminou em estado final. 💥")
-
-if __name__ == '__main__':
+if __name__=='__main__':
     limpar_tela()
-    print('Escolha a máquina: [1] AFD  [2] APD')
-    opcao = input('Opção: ').strip()
-    tipo = 'AFD' if opcao == '1' else 'APD'
-    caminho = input('Caminho do arquivo (.txt): ').strip()
-    simular_maquina(tipo, caminho)
+    print('[1] AFD  [2] APD  [3] MOORE  [4] MEALY')
+    op=input('Opção: ').strip()
+    tipos={'1':'AFD','2':'APD','3':'MOORE','4':'MEALY'}
+    simular(tipos.get(op,'AFD'),input('Arquivo (.txt): ').strip())
