@@ -5,7 +5,6 @@ import os
 def limpar_tela():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-
 def exibir_cabecalho(titulo):
     largura = 42
     print("╔" + "═" * largura + "╗")
@@ -17,7 +16,6 @@ def exibir_cabecalho(titulo):
 def exibir_estado(estado):
     print(f"Estado atual: [ {estado} ]\n")
 
-
 def exibir_ingrediente(ing):
     print("╭" + "─" * (len(ing) + 6) + "╮")
     print(f"│ adc:{ing} │")
@@ -26,12 +24,10 @@ def exibir_ingrediente(ing):
     efeito_agitar()
     efeito_transformacao()
 
-
 def exibir_barra(ingr_list):
     barra = "Mistura: [ " + " ═ ".join(ingr_list) + " ]"
     print(barra + "\n")
     time.sleep(0.6)
-
 
 def exibir_pilha(pilha):
     print("Pilha da Receita:")
@@ -42,27 +38,22 @@ def exibir_pilha(pilha):
             print(f"| {elem} |")
         print("-----\n")
 
-
 def efeito_borbulha():
     print("borbulhas cintilantes sobem...")
     time.sleep(0.6)
-
 
 def efeito_agitar():
     print("agitando o caldeirão com leveza...")
     time.sleep(0.6)
 
-
 def efeito_transformacao():
     print("reações etéreas acontecem...")
     time.sleep(0.6)
-
 
 def efeito_vapor():
     print("🔮 nuvens místicas emanam vapores... 🔮")
     time.sleep(0.8)
     print("🔮 um aroma arcano preenche o ar! 🔮\n")
-
 
 def efeito_final():
     print("\nFinalizando a criação...")
@@ -70,7 +61,6 @@ def efeito_final():
         print(simbolo, end=" ", flush=True)
         time.sleep(0.5)
     print("\n✨✨✨ Poção forjada com maestria! ✨✨✨\n")
-
 
 class AutomatoAFD:
     def __init__(self, estados, inicial, finais, transicoes):
@@ -86,8 +76,7 @@ class AutomatoAFD:
         self.estado_atual = 'erro'
         return False
 
-
-class AutomatoPilha:
+class AutomatoAPD:
     def __init__(self, estados, inicial, finais, transicoes):
         self.estado_atual = inicial
         self.estados_finais = set(finais)
@@ -95,19 +84,26 @@ class AutomatoPilha:
         self.pilha = []
 
     def processar(self, simbolo):
-        topo = self.pilha[-1] if self.pilha else 'λ'
+        topo = self.pilha[-1] if self.pilha else '*'
+
         chave = (self.estado_atual, simbolo, topo)
-        if chave in self.transicoes:
-            prox, acao = self.transicoes[chave]
-            self.estado_atual = prox
-            if acao.startswith('push:'):
-                _, val = acao.split(':')
-                self.pilha.append(val)
-            elif acao == 'pop' and self.pilha:
-                self.pilha.pop()
-            return True
-        self.estado_atual = 'erro'
-        return False
+        if chave not in self.transicoes:
+            chave = (self.estado_atual, simbolo, '*')
+            if chave not in self.transicoes:
+                self.estado_atual = 'erro'
+                return False
+
+        prox, empilhar = self.transicoes[chave]
+        self.estado_atual = prox
+        desempilhar = chave[2]
+        if desempilhar != '*' and self.pilha:
+            self.pilha.pop()
+        if empilhar != '*':
+            self.pilha.append(empilhar)
+
+        return True
+
+
 
 def ler_arquivo_afd(caminho):
     linhas = [l.strip() for l in open(caminho, encoding='utf-8') if l.strip()]
@@ -130,7 +126,7 @@ def ler_arquivo_afd(caminho):
 
 def ler_arquivo_apd(caminho):
     linhas = [l.strip() for l in open(caminho, encoding='utf-8') if l.strip()]
-    estados, inicial, finais, transicoes = [], '', [], {}
+    estados, inicial, finais, transicoes, mensagens = [], '', [], {}, {}
     for l in linhas:
         if l.startswith('Q:'):
             estados = l[2:].split()
@@ -138,14 +134,20 @@ def ler_arquivo_apd(caminho):
             inicial = l[2:].strip()
         elif l.startswith('F:'):
             finais.extend(l[2:].split())
-        elif '->' in l and '|' in l:
-            parte, info = l.split('|')
-            src, dst = [x.strip() for x in parte.split('->')]
-            simb, topo, acao = info.split()
-            transicoes[(src, simb, topo)] = (dst, acao)
+        elif '->' in l and '|' in l and ';' in l:
+            parte1, resto = l.split('|', 1)
+            src, dst = [x.strip() for x in parte1.split('->')]
+            simbolo_lido, resto2 = resto.split(';', 1)
+            simbolo_lido = simbolo_lido.strip()
+            desempilhar, empilhar = [x.strip() for x in resto2.split('|')]
+            transicoes[(src, simbolo_lido, desempilhar)] = (dst, empilhar)
+        elif l.startswith('MSG:'):
+            _, resto = l.split(':', 1)
+            simbolo, mensagem = [x.strip() for x in resto.split('|', 1)]
+            mensagens[simbolo] = mensagem
         elif l == '---':
             break
-    return estados, inicial, finais, transicoes
+    return estados, inicial, finais, transicoes, mensagens
 
 def carregar_receitas():
     return {
@@ -158,12 +160,14 @@ def carregar_receitas():
 def simular_maquina(tipo, caminho):
     nome = os.path.splitext(os.path.basename(caminho))[0]
     nome_pocao, seq_esperada = carregar_receitas().get(nome, ('Receita Desconhecida', []))
+
     if tipo == 'AFD':
         _, ini, fins, trans = ler_arquivo_afd(caminho)
         auto = AutomatoAFD(None, ini, fins, trans)
+        mensagens = {}
     else:
-        _, ini, fins, trans = ler_arquivo_apd(caminho)
-        auto = AutomatoPilha(None, ini, fins, trans)
+        _, ini, fins, trans, mensagens = ler_arquivo_apd(caminho)
+        auto = AutomatoAPD(None, ini, fins, trans)
 
     limpar_tela()
     exibir_cabecalho(f"{tipo} - Receita: {nome_pocao}")
@@ -182,8 +186,13 @@ def simular_maquina(tipo, caminho):
         exibir_cabecalho(f"{tipo} - Receita: {nome_pocao}")
         exibir_barra(lidos)
         exibir_estado(auto.estado_atual)
+
         if tipo == 'APD':
             exibir_pilha(auto.pilha)
+            for simb_m in mensagens:
+                if simb_m in auto.pilha:
+                    print(f"⚠️ Atenção: {mensagens[simb_m]}\n")
+
         if not sucesso or auto.estado_atual == 'erro':
             print("💥 Receita falhou: mistura corrompida. 💥")
             return

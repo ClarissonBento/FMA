@@ -24,3 +24,6 @@ q9 -> F | et ; * | *
 
 F -> F | ah ; Q | *
 
+# Mensagens baseadas no conteudo da pilha
+
+MSG: Q | a quantidade de quelidônia está desbalanceada!!
