@@ -1,0 +1,35 @@
+Q: I q1 q2 q3 q4 q5 q6 q7 q8 q9 q10 q11 q12 F
+I: I
+F: F
+
+I -> q1 | co ; * | *
+
+q1 -> q2 | co ; * | *
+
+q2 -> q3 | sa ; * | ZSSS
+
+q3 -> q3 | sa ; * | SSS
+q3 -> q4 | gb ; S | *
+
+q4 -> q4 | gb ; S | *
+q4 -> q5 | vb ; Z | *
+
+q5 -> q6 | et ; * | Z
+q5 -> q8 | br ; * | *
+
+q6 -> q7 | et ; * | E
+
+q7 -> q6 | et ; * | *
+q7 -> q7 | oc ; E | *
+q7 -> q8 | br ; Z | *
+
+q8 -> q9 | az ; * | *
+
+q9 -> q10 | fpc ; * | *
+
+q10 -> q11 | fpc ; * | *
+
+q11 -> q12 | fpc ; * | *
+
+q12 -> F | fpc ; * | *
+
