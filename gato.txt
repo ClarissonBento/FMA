@@ -1,4 +1,4 @@
-Q: I q1 q2 q3 F
+q1 q2 q3 F
 I: I
 F: F
 
@@ -18,6 +18,6 @@ q3 -> q3 | ah ; * | *
 q3 -> q2 | et ; S | Y 
 q3 -> F | vb ; Z | * 
 
-
-
-
+MSG: Z | poção precisa de um estabilizante!
+MSG: X | toxicidade alta, precisa-se de alcohol para diluir!
+MSG: Y | energia instável, precisa-se de um catalizador!

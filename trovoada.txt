@@ -33,3 +33,6 @@ q11 -> q12 | fpc ; * | *
 
 q12 -> F | fpc ; * | *
 
+MSG: S | cuidado! grande quantidade de salitre
+msg: E | nível instável de energia, precisa-se de um catalisador!
+
