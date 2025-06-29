@@ -21,11 +21,9 @@ def simular(tipo, arquivo):
     elif tipo == 'MOORE':
         ini, trans, saida = ler_arquivo_moore(arquivo)
         auto = AutomatoMoore(ini, trans, saida)
-        return
     elif tipo == 'MEALY':
         ini, trans = ler_arquivo_mealy(arquivo)
         auto = AutomatoMealy(ini, trans)
-        return
     elif tipo == 'MT':
         ini, fins, trans = ler_arquivo_turing(arquivo)
         auto = MaquinaTuring(ini, fins, trans)
