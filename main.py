@@ -55,7 +55,6 @@ def simular(tipo, arquivo):
         return  # MT não usa o loop de entrada símbolo a símbolo
 
     exibir_estado_atual(auto.estado_atual)
-
     saida_total = ""
 
     while True:
@@ -63,7 +62,7 @@ def simular(tipo, arquivo):
         if s == 'fim':
             break
 
-        tokens = s.split() 
+        tokens = s.split()
 
         for simbolo in tokens:
             limpar_tela()
@@ -81,9 +80,10 @@ def simular(tipo, arquivo):
                 print("💥 Erro na simulação.")
                 return
 
-            saida_atual = auto.saida_atual()
-            if saida_atual != 'λ': 
-                saida_total += saida_atual
+            if tipo == 'MOORE':
+                saida_atual = auto.saida_atual()
+                if saida_atual != 'λ':
+                    saida_total += saida_atual
 
     if tipo in ['AFD', 'APD']:
         if auto.estado_atual in auto.estados_finais:
@@ -96,7 +96,6 @@ def simular(tipo, arquivo):
             print("⚠ Pilha final:")
             exibir_pilha(auto.pilha)
             simbolos_verificados = set()
-            
             for simbolo in auto.pilha:
                 if simbolo in auto.mensagens and simbolo not in simbolos_verificados:
                     print(f"⚠ {auto.mensagens[simbolo]}")
@@ -106,7 +105,7 @@ def simular(tipo, arquivo):
         print(f"Saída final acumulada: {saida_total}")
 
     if tipo == 'MEALY':
-        print("Simulação Mealy concluída.")
+        print(f"Saída final acumulada: {auto.saida_atual()}")
 
 
 if __name__ == '__main__':
