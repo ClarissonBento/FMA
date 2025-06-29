@@ -1,9 +1,9 @@
 from util import *
-from automato_finito import AutomatoAFD, ler_arquivo_afd
-from automato_pilha import AutomatoAPD, ler_arquivo_apd, ler_mensagens_pilha
-from mealy import AutomatoMealy, ler_arquivo_mealy
-from moore import AutomatoMoore, ler_arquivo_moore
-from turing import MaquinaTuring, ler_arquivo_turing, MAPA_RUNAS
+from maquinas.automato_finito import AutomatoAFD, ler_arquivo_afd
+from maquinas.automato_pilha import AutomatoAPD, ler_arquivo_apd, ler_mensagens_pilha
+from maquinas.mealy import AutomatoMealy, ler_arquivo_mealy
+from maquinas.moore import AutomatoMoore, ler_arquivo_moore
+from maquinas.turing import MaquinaTuring, ler_arquivo_turing, MAPA_RUNAS
 
 
 def simular(tipo, arquivo):

@@ -1,7 +1,13 @@
+P: I m1 m2 f
+I: I 
+
 I -> m1 | ce ; λ
+
 m1 -> m1 | q ; i
 m1 -> m2 | pmb ; v
+
 m2 -> m2 | vb ; p
 m2 -> m2 | gb ; p
 m2 -> f | ah ; λ
+
 f -> O | pa ; O
