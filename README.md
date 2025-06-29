@@ -11,7 +11,8 @@ Para visualizar a interface pelo linux basta digitar o comando:
     python3 interface.py
 
 Tambem pode ser usado o botão “Run Python File”.
-obs: É necessário o tkinter para visualizar a interface, em algumas distribuições linux ele pode não vir instalado por padrão
+
+É necessário o "Tkinter" e o "Pillow" para visualizar a interface, em algumas distribuições linux eles podem não vir instalados por padrão.
 
 Para visualizar a interface pelo windows use:
-    python3 interface.py 
+    python interface.py 
