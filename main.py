@@ -1,110 +1,112 @@
-import os
 from util import *
 from maquinas.automato_finito import AutomatoAFD, ler_arquivo_afd
 from maquinas.automato_pilha import AutomatoAPD, ler_arquivo_apd, ler_mensagens_pilha
 from maquinas.mealy import AutomatoMealy, ler_arquivo_mealy
 from maquinas.moore import AutomatoMoore, ler_arquivo_moore
-# from maquinas.turing import MaquinaTuring, ler_arquivo_turing, MAPA_RUNAS  # opcional se não usar ainda
+from maquinas.turing import MaquinaTuring, ler_arquivo_turing, MAPA_RUNAS
 
-def simular(tipo, nome_arquivo):
-    caminho = os.path.join("receitas", nome_arquivo)
 
-    try:
-        nome = ler_header(caminho)
-    except Exception as e:
-        limpar_tela()
-        print(f"❌ Erro ao ler nome da poção: {e}")
-        return
-
+def simular(tipo, arquivo):
+    nome = ler_header(arquivo)
     limpar_tela()
     exibir_cabecalho(f"{tipo} - Poção: {nome}")
 
-    try:
-        if tipo == 'AFD':
-            ini, fins, trans = ler_arquivo_afd(caminho)
-            auto = AutomatoAFD(ini, fins, trans)
-        elif tipo == 'APD':
-            ini, fins, trans = ler_arquivo_apd(caminho)
-            mensagens = ler_mensagens_pilha(caminho)
-            auto = AutomatoAPD(ini, fins, trans, mensagens)
-        elif tipo == 'MOORE':
-            ini, trans, saidas = ler_arquivo_moore(caminho)
-            auto = AutomatoMoore(ini, trans, saidas)
-        elif tipo == 'MEALY':
-            ini, trans = ler_arquivo_mealy(caminho)
-            auto = AutomatoMealy(ini, trans)
-        else:
-            raise ValueError(f"Tipo desconhecido: {tipo}")
-    except Exception as e:
-        print(f"❌ Erro ao ler autômato do arquivo: {e}")
-        return
+    if tipo == 'AFD':
+        ini, fins, trans = ler_arquivo_afd(arquivo)
+        auto = AutomatoAFD(ini, fins, trans)
+    elif tipo == 'APD':
+        ini, fins, trans = ler_arquivo_apd(arquivo)
+        mensagens = ler_mensagens_pilha(arquivo)
+        auto = AutomatoAPD(ini, fins, trans, mensagens)
+    elif tipo == 'MOORE':
+        ini, trans, saida = ler_arquivo_moore(arquivo)
+        auto = AutomatoMoore(ini, trans, saida)
+    elif tipo == 'MEALY':
+        ini, trans = ler_arquivo_mealy(arquivo)
+        auto = AutomatoMealy(ini, trans)
+    elif tipo == 'MT':
+        ini, fins, trans = ler_arquivo_turing(arquivo)
+        auto = MaquinaTuring(ini, fins, trans)
 
-    ingredientes = []
-    sucesso = True
+        print("Digite a sequência de runas separadas por espaço (ex: aard igni quen):")
+        entrada_runas = input("> ").strip().lower().split()
+
+        palavra = ""
+        for runa in entrada_runas:
+            if runa not in MAPA_RUNAS:
+                print(f"⚠ Runa inválida: {runa}")
+                return
+            palavra += MAPA_RUNAS[runa]
+
+        auto.inicializar_fita(palavra)
+
+        limpar_tela()
+        exibir_cabecalho(f"{tipo} - Poção: {nome}")
+        print(f"Fita inicial (traduzida): {palavra}")
+
+        aceita = auto.processar()
+
+        if aceita:
+            efeito_vapor()
+            print('✨✨✨✨✨✨✨✨✨✨✨✨✨')
+        else:
+            print("❌ A poção falhou! A Máquina parou em estado não final ou sem transições.")
+        
+        return  # MT não usa o loop de entrada símbolo a símbolo
+
+    exibir_estado_atual(auto.estado_atual)
 
     while True:
-        s = input('Digite símbolo (ou "fim"): ').strip()
-        if s.lower() == 'fim':
+        s = input('Digite símbolo (ou "fim"): ').strip().lower()
+        if s == 'fim':
             break
 
-        ingredientes.append(s)
         limpar_tela()
         exibir_cabecalho(f"{tipo} - Poção: {nome}")
         exibir_ingrediente(s)
-        exibir_barra(ingredientes)
-        print(f"Estado atual: {auto.estado_atual}\n")
 
-        try:
-            ok = auto.processar(s)
-        except Exception as e:
-            print(f"❌ Erro na transição: {e}")
-            sucesso = False
-            break
+        ok = auto.processar(s)
 
-        if not ok or getattr(auto, 'estado_atual', '') == 'erro':
-            print("\n💥 Erro na simulação.")
-            sucesso = False
-            break
+        if tipo == 'APD':
+            exibir_pilha(auto.pilha)
 
-    limpar_tela()
-    exibir_cabecalho(f"{tipo} - Poção: {nome}")
+        exibir_estado_atual(auto.estado_atual)
 
-    if sucesso:
-        if tipo in ['AFD', 'APD']:
-            if auto.estado_atual in auto.estados_finais:
-                efeito_vapor()
-                efeito_final()
-                print(f"\n✨ Poção {nome} criada com sucesso! ✨")
-            else:
-                print("\n❌ A poção falhou! Estado final inválido.\n")
-            if tipo == 'APD':
-                print("⚠ Pilha final:")
-                exibir_pilha(auto.pilha)
-                simbolos_verificados = set()
-                for simbolo in auto.pilha:
-                    if simbolo in auto.mensagens and simbolo not in simbolos_verificados:
-                        print(f"⚠ {auto.mensagens[simbolo]}")
-                        simbolos_verificados.add(simbolo)
+        if not ok or auto.estado_atual == 'erro':
+            print("💥 Erro na simulação.")
+            return
 
-        elif tipo in ['MOORE', 'MEALY']:
+    if tipo in ['AFD', 'APD']:
+        if auto.estado_atual in auto.estados_finais:
             efeito_vapor()
             efeito_final()
-            print(f"\n✨ Poção {nome} criada com sucesso! ✨")
-    else:
-        print("\n❌ A poção falhou durante o preparo.")
+        else:
+            print("❌ A poção falhou! O processo foi interrompido em um estado não final.\n")
+
+        if tipo == 'APD':
+            print("⚠ Pilha final:")
+            exibir_pilha(auto.pilha)
+            simbolos_verificados = set()
+            
+            for simbolo in auto.pilha:
+                if simbolo in auto.mensagens and simbolo not in simbolos_verificados:
+                    print(f"⚠ {auto.mensagens[simbolo]}")
+                    simbolos_verificados.add(simbolo)
+
+    if tipo == 'MOORE':
+        print(f"Saída final: {auto.saida_atual()}")
+
+    if tipo == 'MEALY':
+        print("Simulação Mealy concluída.")
+
 
 if __name__ == '__main__':
     limpar_tela()
-    print('[1] AFD  [2] APD  [3] MOORE  [4] MEALY')
+    print('[1] AFD  [2] APD  [3] MOORE  [4] MEALY  [5] MT')
     op = input('Opção: ').strip()
-    tipos = {'1': 'AFD', '2': 'APD', '3': 'MOORE', '4': 'MEALY'}
-    escolha = tipos.get(op)
-    if not escolha:
-        print('❌ Opção inválida.')
-    else:
-        print('\n📁 Arquivos disponíveis na pasta "receitas/":')
-        for arq in os.listdir("receitas"):
-            if arq.endswith(".txt"):
-                print(f' - {arq}')
-        nome_arquivo = input('\nDigite o nome do arquivo (.txt): ').strip()
-        simular(escolha, nome_arquivo)
+    tipos = {'1': 'AFD', '2': 'APD', '3': 'MOORE', '4': 'MEALY', '5': 'MT'}
+    
+    arquivo = input('Arquivo (.txt): ').strip()
+    caminho_completo = f"receitas/{arquivo}.txt"
+    
+    simular(tipos.get(op, 'AFD'), caminho_completo)
