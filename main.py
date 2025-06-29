@@ -56,36 +56,34 @@ def simular(tipo, arquivo):
 
     exibir_estado_atual(auto.estado_atual)
 
-    # Adicionado para Mealy: definir estados finais conhecidos
-    finais_mealy = {'f1'}
+    saida_total = ""
 
     while True:
-        s = input('Digite símbolo (ou "fim"): ').strip().lower()
-        
+        s = input('Digite símbolo(s) (ou "fim"): ').strip().lower()
         if s == 'fim':
-            if tipo == 'MEALY':
-                if auto.estado_atual in finais_mealy:
-                    efeito_vapor()
-                    print("✨ Poção criada com sucesso! ✨")
-                else:
-                    print("❌ A poção falhou! A Máquina parou em estado não final.")
             break
 
-        limpar_tela()
-        exibir_cabecalho(f"{tipo} - Poção: {nome}")
-        exibir_ingrediente(s)
+        tokens = s.split() 
 
-        ok = auto.processar(s)
+        for simbolo in tokens:
+            limpar_tela()
+            exibir_cabecalho(f"{tipo} - Poção: {nome}")
+            exibir_ingrediente(simbolo)
 
-        if tipo == 'APD':
-            exibir_pilha(auto.pilha)
+            ok = auto.processar(simbolo)
 
-        exibir_estado_atual(auto.estado_atual)
+            if tipo == 'APD':
+                exibir_pilha(auto.pilha)
 
-        if not ok or auto.estado_atual == 'erro':
-            print("💥 Erro na simulação.")
-            return
+            exibir_estado_atual(auto.estado_atual)
 
+            if not ok or auto.estado_atual == 'erro':
+                print("💥 Erro na simulação.")
+                return
+
+            saida_atual = auto.saida_atual()
+            if saida_atual != 'λ': 
+                saida_total += saida_atual
 
     if tipo in ['AFD', 'APD']:
         if auto.estado_atual in auto.estados_finais:
@@ -105,7 +103,7 @@ def simular(tipo, arquivo):
                     simbolos_verificados.add(simbolo)
 
     if tipo == 'MOORE':
-        print(f"Saída final: {auto.saida_atual()}")
+        print(f"Saída final acumulada: {saida_total}")
 
     if tipo == 'MEALY':
         print("Simulação Mealy concluída.")

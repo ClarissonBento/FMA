@@ -15,18 +15,34 @@ class AutomatoMoore:
     def saida_atual(self):
         return self.saidas.get(self.estado_atual, '')
 
+
 def ler_arquivo_moore(caminho):
-    linhas = [l.strip() for l in open(caminho, encoding='utf-8') if l.strip() and not l.startswith('NOME:')]
-    ini = ''; trans = {}; saida = {}
+    with open(caminho, encoding='utf-8') as arq:
+        linhas = [l.strip() for l in arq if l.strip() and not l.startswith('NOME:')]
+
+    ini = ''
+    trans = {}
+    saida = {}
+
     for l in linhas:
         if l.startswith('I:') and not ini:
             ini = l[2:].strip()
+
         elif '->' in l and ';' in l and '|' in l:
-            p, r = l.split(';')
-            dst, syms = [x.strip() for x in p.split('->')]
-            out, syms2 = [x.strip() for x in r.split('|')]
-            saida[dst] = out
-            for sym in syms2.split():
-                trans[(p.split('->')[0].strip(), sym)] = dst
-        elif l == '---': break
+            parte_transicao, parte_saida = l.split(';')
+            
+            origem, destino = [x.strip() for x in parte_transicao.split('->')]
+            saida_destino, simbolos = [x.strip() for x in parte_saida.split('|')]
+
+            saida[destino] = saida_destino
+
+            for sym in simbolos.split():
+                trans[(origem, sym)] = destino
+        
+        elif l == '---':
+            break
+
+    if not ini:
+        ini = 'I'  
     return ini, trans, saida
+
