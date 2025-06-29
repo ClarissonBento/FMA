@@ -1,0 +1,65 @@
+Q: q0 q1 q2 q3 q4 q5 q6 q7 q8 q9 q10 q11
+
+# Estado inicial
+I: q0
+
+# Estado de aceitação
+F: q8
+
+q0 -> q1 | a | _ | R
+q0 -> q4 | e | _ | R
+q0 -> q6 | b | _ | R
+q0 -> q7 | d | _ | R
+q0 -> q10 | c | _ | R
+
+q1 -> q1 | a | a | R
+q1 -> q1 | b | b | R
+q1 -> q1 | c | c | R
+q1 -> q1 | d | d | R
+q1 -> q1 | e | e | R
+q1 -> q2 | _ | _ | L
+
+q2 -> q8 | a | _ | L
+
+q3 -> q8 | b | _ | L
+
+q4 -> q4 | a | a | R
+q4 -> q4 | b | b | R
+q4 -> q4 | c | c | R
+q4 -> q4 | d | d | R
+q4 -> q4 | e | e | R
+q4 -> q5 | _ | _ | L
+
+q5 -> q8 | e | _ | L
+
+q6 -> q6 | a | a | R
+q6 -> q6 | b | b | R
+q6 -> q6 | c | c | R
+q6 -> q6 | d | d | R
+q6 -> q6 | e | e | R
+q6 -> q3 | _ | _ | L
+
+q7 -> q7 | a | a | R
+q7 -> q7 | b | b | R
+q7 -> q7 | c | c | R
+q7 -> q7 | d | d | R
+q7 -> q7 | e | e | R
+q7 -> q9 | _ | _ | L
+
+q8 -> q8 | a | a | L
+q8 -> q8 | b | b | L
+q8 -> q8 | c | c | L
+q8 -> q8 | d | d | L
+q8 -> q8 | e | e | L
+q8 -> q0 | _ | _ | R
+
+q9 -> q8 | d | _ | L
+
+q10 -> q10 | a | a | R
+q10 -> q10 | b | b | R
+q10 -> q10 | c | c | R
+q10 -> q10 | d | d | R
+q10 -> q10 | e | e | R
+q10 -> q11 | _ | _ | L
+
+q11 -> q8 | c | _ | L

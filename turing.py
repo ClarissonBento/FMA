@@ -1,5 +1,8 @@
-# convertendo as palavras para simbolos para facilitar
-para_simbolo = {
+import os
+import time
+
+# Mapeamento das runas para caracter
+MAPA_RUNAS = {
     'aard': 'a',
     'igni': 'b',
     'yrdden': 'c',
@@ -7,83 +10,117 @@ para_simbolo = {
     'axii': 'e'
 }
 
+# Mapeamento reverso
+MAPA_SIMBOLOS = {v: k for k, v in MAPA_RUNAS.items()}
+
+
+CORES_RUNAS = {
+    'aard': '\033[94m',     
+    'igni': '\033[91m',   
+    'yrdden': '\033[95m',  
+    'quen': '\033[93m',     
+    'axii': '\033[92m',     
+    '_': '\033[90m'        
+}
+RESET = '\033[0m'
+
+def traduzir_runas(entrada):
+    runas = entrada.strip().split()
+    return ''.join(MAPA_RUNAS[runa] for runa in runas if runa in MAPA_RUNAS)
+
 class MaquinaTuring:
-    def __init__(self, fita, estado_inicial, estado_aceitacao, estado_rejeicao, transicoes):
-        self.fita = list(fita) + ['␣']
-        self.estado = estado_inicial
-        self.estado_aceitacao = estado_aceitacao
-        self.estado_rejeicao = estado_rejeicao
-        self.transicoes = transicoes
-        self.pos = 0
+    def __init__(self, ini, finais, trans):
+        self.estado_inicial = ini
+        self.estados_finais = finais
+        self.transicoes = trans
+        self.estado_atual = ini
+        self.fita = []
+        self.cabecote = 0
 
-    def passo(self):
-        simbolo = self.fita[self.pos]
-        chave = (self.estado, simbolo)
-        if chave in self.transicoes:
-            novo_estado, novo_simbolo, direcao = self.transicoes[chave]
-            self.fita[self.pos] = novo_simbolo
-            self.estado = novo_estado
-            if direcao == 'R':
-                self.pos += 1
-            elif direcao == 'L':
-                self.pos -= 1
-            return True
-        else:
-            return False
+    def inicializar_fita(self, palavra):
+        self.fita = list(palavra) + ["_"] * 10
+        self.cabecote = 0
+        self.estado_atual = self.estado_inicial
 
-    def executar(self):
-        # Sem prints dos passos — só roda
-        while self.estado not in ["q_accept", "q_reject"]:
-            if not self.passo():
-                self.estado = "q_reject"
-                break
-        return self.estado == "q_accept"
+    def fita_com_runas(self):
+        fita_colorida = []
+        for s in self.fita:
+            runa = MAPA_SIMBOLOS.get(s, s)
+            cor = CORES_RUNAS.get(runa, RESET)
+            fita_colorida.append(f"{cor}{runa}{RESET}")
+        return fita_colorida
 
-# Transições da MT
-transicoes = {}
-alfabeto = 'abcde'
+    def imprimir_fita(self,  delay=0.5):
+        fita_runica = self.fita_com_runas()
+        fita_str = ""
+        fita_filtrada = [runa for i, runa in enumerate(fita_runica) if self.fita[i] != '_']
+        for i, simbolo in enumerate(fita_runica):
+            if i == self.cabecote:
+                fita_str += f"[{simbolo}]"
+            else:
+                fita_str += f" {simbolo} "
+        #print(f"🧙 Estado do Bruxo: {self.estado_atual}")
+        #print(f"🔮 Fita das Runas: {fita_str}\n")
+        if self.estado_atual in ['q0']:
+            time.sleep(delay)
+            print("", ' '.join(fita_filtrada), "\n")
 
-for letra in alfabeto:
-    transicoes[('q0', letra)] = (f'q1{letra}', 'X', 'R')
+    def processar(self):
+        while True:
+            self.imprimir_fita()
 
-for l in alfabeto + 'X':
-    for estado in [f'q1{c}' for c in alfabeto]:
-        transicoes[(estado, l)] = (estado, l, 'R')
+            simbolo_lido = self.fita[self.cabecote]
+            chave = (self.estado_atual, simbolo_lido)
 
-for c in alfabeto:
-    transicoes[(f'q1{c}', '␣')] = (f'q2{c}', '␣', 'L')
+            if chave not in self.transicoes:
+                print("⚠️ A magia falhou! Nenhuma runa respondeu ao gesto.")
+                return False
 
-for c in alfabeto:
-    for l in alfabeto:
-        if c == l:
-            transicoes[(f'q2{c}', l)] = ('q3', 'X', 'L')
-        else:
-            transicoes[(f'q2{c}', l)] = ('q_reject', l, 'S')
-    transicoes[(f'q2{c}', 'X')] = (f'q2{c}', 'X', 'L')
-    transicoes[(f'q2{c}', '␣')] = ('q_accept', '␣', 'S')
+            proximo_estado, simbolo_escrito, direcao = self.transicoes[chave]
+            self.fita[self.cabecote] = simbolo_escrito
 
-for l in alfabeto + 'X':
-    transicoes[('q3', l)] = ('q3', l, 'L')
-transicoes[('q3', '␣')] = ('q0', '␣', 'R')
+            if direcao == "R":
+                self.cabecote += 1
+                if self.cabecote >= len(self.fita):
+                    self.fita.append("_")
+            elif direcao == "L":
+                self.cabecote = max(0, self.cabecote - 1)
 
-transicoes[('q0', 'X')] = ('q0', 'X', 'R')
-transicoes[('q0', '␣')] = ('q_accept', '␣', 'S')
+            self.estado_atual = proximo_estado
 
-entrada_magica = input("Digite suas runas mágicas separadas por espaço (aard igni yrdden quen axii):\n").strip().lower().split()
+            if all(s == "_" for s in self.fita):
+                if self.estado_atual in self.estados_finais:
+                    print("✨ O feitiço foi concluído com sucesso! As runas brilham na escuridão.")
+                    return True
+                else:
+                    print("💥 A magia falhou! As runas se desfizeram sem efeito.")
+                    return False
 
-if all(palavra in para_simbolo for palavra in entrada_magica):
-    entrada_convertida = ''.join([para_simbolo[p] for p in entrada_magica])
-    mt = MaquinaTuring(
-        fita=entrada_convertida,
-        estado_inicial="q0",
-        estado_aceitacao="q_accept",
-        estado_rejeicao="q_reject",
-        transicoes=transicoes
-    )
-    sucesso = mt.executar()
-    if sucesso:
-        print("\nO feitiço foi lançado com sucesso! Suas runas formam um palíndromo")
-    else:
-        print("\nA magia falhou, as runas não formam um palíndromo")
-else:
-    print("Erro: Use apenas as runas permitidas: aard, igni, yrdden, quen, axii.")
+def ler_arquivo_turing(caminho):
+    with open(caminho, 'r') as f:
+        linhas = f.readlines()
+
+    transicoes = {}
+    ini = ""
+    finais = []
+
+    for linha in linhas:
+        linha = linha.strip()
+        if not linha or linha.startswith("#"):
+            continue
+        if linha.startswith("I:"):
+            ini = linha.split(":", 1)[1].strip()
+        elif linha.startswith("F:"):
+            finais = linha.split(":")[1].strip().split()
+        elif "->" in linha:
+            partes = linha.split("|")
+            estado_atual, proximo_estado = partes[0].split("->")
+            simbolo_lido = partes[1].strip()
+            simbolo_escrito = partes[2].strip()
+            direcao = partes[3].strip()
+
+            transicoes[(estado_atual.strip(), simbolo_lido)] = (
+                proximo_estado.strip(), simbolo_escrito, direcao
+            )
+
+    return ini, finais, transicoes

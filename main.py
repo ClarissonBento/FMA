@@ -3,6 +3,8 @@ from automato_finito import AutomatoAFD, ler_arquivo_afd
 from automato_pilha import AutomatoAPD, ler_arquivo_apd, ler_mensagens_pilha
 from mealy import AutomatoMealy, ler_arquivo_mealy
 from moore import AutomatoMoore, ler_arquivo_moore
+from turing import MaquinaTuring, ler_arquivo_turing, MAPA_RUNAS
+
 
 def simular(tipo, arquivo):
     nome = ler_header(arquivo)
@@ -22,6 +24,35 @@ def simular(tipo, arquivo):
     elif tipo == 'MEALY':
         ini, trans = ler_arquivo_mealy(arquivo)
         auto = AutomatoMealy(ini, trans)
+    elif tipo == 'MT':
+        ini, fins, trans = ler_arquivo_turing(arquivo)
+        auto = MaquinaTuring(ini, fins, trans)
+
+        print("Digite a sequência de runas separadas por espaço (ex: aard igni quen):")
+        entrada_runas = input("> ").strip().lower().split()
+
+        palavra = ""
+        for runa in entrada_runas:
+            if runa not in MAPA_RUNAS:
+                print(f"⚠ Runa inválida: {runa}")
+                return
+            palavra += MAPA_RUNAS[runa]
+
+        auto.inicializar_fita(palavra)
+
+        limpar_tela()
+        exibir_cabecalho(f"{tipo} - Poção: {nome}")
+        print(f"Fita inicial (traduzida): {palavra}")
+
+        aceita = auto.processar()
+
+        if aceita:
+            efeito_vapor()
+            print('✨✨✨✨✨✨✨✨✨✨✨✨✨')
+        else:
+            print("❌ A poção falhou! A Máquina parou em estado não final ou sem transições.")
+        
+        return  # MT não usa o loop de entrada símbolo a símbolo
 
     exibir_estado(auto.estado_atual)
 
@@ -62,16 +93,16 @@ def simular(tipo, arquivo):
                     print(f"⚠ {auto.mensagens[simbolo]}")
                     simbolos_verificados.add(simbolo)
 
-
     if tipo == 'MOORE':
         print(f"Saída final: {auto.saida_atual()}")
 
     if tipo == 'MEALY':
         print("Simulação Mealy concluída.")
 
+
 if __name__ == '__main__':
     limpar_tela()
-    print('[1] AFD  [2] APD  [3] MOORE  [4] MEALY')
+    print('[1] AFD  [2] APD  [3] MOORE  [4] MEALY  [5] MT')
     op = input('Opção: ').strip()
-    tipos = {'1': 'AFD', '2': 'APD', '3': 'MOORE', '4': 'MEALY'}
+    tipos = {'1': 'AFD', '2': 'APD', '3': 'MOORE', '4': 'MEALY', '5': 'MT'}
     simular(tipos.get(op, 'AFD'), input('Arquivo (.txt): ').strip())
