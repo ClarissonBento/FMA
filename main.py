@@ -105,4 +105,9 @@ if __name__ == '__main__':
     print('[1] AFD  [2] APD  [3] MOORE  [4] MEALY  [5] MT')
     op = input('Opção: ').strip()
     tipos = {'1': 'AFD', '2': 'APD', '3': 'MOORE', '4': 'MEALY', '5': 'MT'}
-    simular(tipos.get(op, 'AFD'), input('Arquivo (.txt): ').strip())
+    
+    arquivo = input('Arquivo (.txt): ').strip()
+    caminho_completo = f"receitas/{arquivo}.txt"
+    
+    simular(tipos.get(op, 'AFD'), caminho_completo)
+
