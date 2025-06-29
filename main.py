@@ -1,17 +1,19 @@
+import os
 from util import *
 from maquinas.automato_finito import AutomatoAFD, ler_arquivo_afd
 from maquinas.automato_pilha import AutomatoAPD, ler_arquivo_apd, ler_mensagens_pilha
 from maquinas.mealy import AutomatoMealy, ler_arquivo_mealy
 from maquinas.moore import AutomatoMoore, ler_arquivo_moore
-from maquinas.turing import MaquinaTuring, ler_arquivo_turing, MAPA_RUNAS
+# from maquinas.turing import MaquinaTuring, ler_arquivo_turing, MAPA_RUNAS  # opcional se não usar ainda
 
+def simular(tipo, nome_arquivo):
+    caminho = os.path.join("receitas", nome_arquivo)
 
-def simular(tipo, arquivo):
     try:
-        nome = ler_header(arquivo)
+        nome = ler_header(caminho)
     except Exception as e:
         limpar_tela()
-        print(f"Erro ao ler nome da poção: {e}")
+        print(f"❌ Erro ao ler nome da poção: {e}")
         return
 
     limpar_tela()
@@ -19,22 +21,22 @@ def simular(tipo, arquivo):
 
     try:
         if tipo == 'AFD':
-            ini, fins, trans = ler_arquivo_afd(arquivo)
+            ini, fins, trans = ler_arquivo_afd(caminho)
             auto = AutomatoAFD(ini, fins, trans)
         elif tipo == 'APD':
-            ini, fins, trans = ler_arquivo_apd(arquivo)
-            mensagens = ler_mensagens_pilha(arquivo)
+            ini, fins, trans = ler_arquivo_apd(caminho)
+            mensagens = ler_mensagens_pilha(caminho)
             auto = AutomatoAPD(ini, fins, trans, mensagens)
         elif tipo == 'MOORE':
-            ini, trans, saidas = ler_arquivo_moore(arquivo)
+            ini, trans, saidas = ler_arquivo_moore(caminho)
             auto = AutomatoMoore(ini, trans, saidas)
         elif tipo == 'MEALY':
-            ini, trans = ler_arquivo_mealy(arquivo)
+            ini, trans = ler_arquivo_mealy(caminho)
             auto = AutomatoMealy(ini, trans)
         else:
             raise ValueError(f"Tipo desconhecido: {tipo}")
     except Exception as e:
-        print(f"Erro ao ler autômato do arquivo: {e}")
+        print(f"❌ Erro ao ler autômato do arquivo: {e}")
         return
 
     ingredientes = []
@@ -55,7 +57,7 @@ def simular(tipo, arquivo):
         try:
             ok = auto.processar(s)
         except Exception as e:
-            print(f"Erro na transição: {e}")
+            print(f"❌ Erro na transição: {e}")
             sucesso = False
             break
 
@@ -84,15 +86,12 @@ def simular(tipo, arquivo):
                         print(f"⚠ {auto.mensagens[simbolo]}")
                         simbolos_verificados.add(simbolo)
 
-        elif tipo == 'MOORE':
+        elif tipo in ['MOORE', 'MEALY']:
             efeito_vapor()
             efeito_final()
             print(f"\n✨ Poção {nome} criada com sucesso! ✨")
-
-        elif tipo == 'MEALY':
-            efeito_vapor()
-            efeito_final()
-            print(f"\n✨ Poção {nome} criada com sucesso! ✨")
+    else:
+        print("\n❌ A poção falhou durante o preparo.")
 
 if __name__ == '__main__':
     limpar_tela()
@@ -101,7 +100,11 @@ if __name__ == '__main__':
     tipos = {'1': 'AFD', '2': 'APD', '3': 'MOORE', '4': 'MEALY'}
     escolha = tipos.get(op)
     if not escolha:
-        print('Opção inválida.')
+        print('❌ Opção inválida.')
     else:
-        caminho = input('Arquivo (.txt): ').strip()
-        simular(escolha, caminho)
+        print('\n📁 Arquivos disponíveis na pasta "receitas/":')
+        for arq in os.listdir("receitas"):
+            if arq.endswith(".txt"):
+                print(f' - {arq}')
+        nome_arquivo = input('\nDigite o nome do arquivo (.txt): ').strip()
+        simular(escolha, nome_arquivo)
