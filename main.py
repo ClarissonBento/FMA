@@ -56,9 +56,19 @@ def simular(tipo, arquivo):
 
     exibir_estado_atual(auto.estado_atual)
 
+    # Adicionado para Mealy: definir estados finais conhecidos
+    finais_mealy = {'f1'}
+
     while True:
         s = input('Digite símbolo (ou "fim"): ').strip().lower()
+        
         if s == 'fim':
+            if tipo == 'MEALY':
+                if auto.estado_atual in finais_mealy:
+                    efeito_vapor()
+                    print("✨ Poção criada com sucesso! ✨")
+                else:
+                    print("❌ A poção falhou! A Máquina parou em estado não final.")
             break
 
         limpar_tela()
@@ -75,6 +85,7 @@ def simular(tipo, arquivo):
         if not ok or auto.estado_atual == 'erro':
             print("💥 Erro na simulação.")
             return
+
 
     if tipo in ['AFD', 'APD']:
         if auto.estado_atual in auto.estados_finais:
